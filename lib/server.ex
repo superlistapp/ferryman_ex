@@ -1,8 +1,6 @@
 defmodule Ferryman.Server do
   use GenServer
 
-  require Logger
-
   defmodule State do
     defstruct [:client, :handler, :channels]
   end
@@ -48,10 +46,9 @@ defmodule Ferryman.Server do
 
   @impl true
   def handle_info(
-        {:redix_pubsub, _pubsub, _ref, :message, %{channel: channel, payload: message}},
+        {:redix_pubsub, _pubsub, _ref, :message, %{channel: _channel, payload: message}},
         state
       ) do
-    Logger.info("Ferryman ::: Channel: #{channel} ::: Message: #{inspect(message)}")
     spawn_link(fn -> handle_request(message, state.handler) end)
     {:noreply, state}
   end
