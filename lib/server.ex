@@ -1,10 +1,46 @@
 defmodule Ferryman.Server do
+  @moduledoc """
+  This module provides the Server API to start a JSONRPC 2.0 Server
+  instance.
+
+  ## Overview
+
+  First, let's define a JSONRPC2 handler, and define the functions we want to be
+  handled by RPC calls.
+
+      defmodule ExampleHandler do
+        use JSONRPC2.Server.Handler
+
+        def handle_request("add", [x, y]) do
+          x + y
+        end
+      end
+
+  Now we can start our Ferryman Server.
+
+      iex> {:ok, pid} = Ferryman.Server.start_link(redis_config: [], channels: ["mychannel"], handler: ExampleHandler)
+
+  The default `redis_config` will look for a redis instance on `"localhost:6379"`.
+  For more configuration options, please check the [Redix Docs](https://hexdocs.pm/redix/Redix.html#module-ssl).
+
+  You can define a list of `channels`, and pass the `handler` module.
+  """
   use GenServer
 
   defmodule State do
     defstruct [:client, :handler, :channels]
   end
 
+  @doc """
+  Starts a new Ferryman.Server, which takes the following keyword list as arguments:
+
+  ## Example
+
+      iex> Ferryman.Server.start_link(redis_config: [], channels: ["mychannel"], handler: ExampleHandler)
+      {:ok, pid}
+  """
+  @spec start_link(redis_config: keyword(), channels: list(String.t()), handler: module()) ::
+          :ignore | {:error, any} | {:ok, pid}
   def start_link(opts) when is_list(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
@@ -67,7 +103,7 @@ defmodule Ferryman.Server do
   @impl true
   def terminate(_reason, _state), do: :ok
 
-  def handle_request(message, handler) do
+  defp handle_request(message, handler) do
     case handler.handle(message) do
       :noreply ->
         :noop
