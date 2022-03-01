@@ -60,4 +60,23 @@ defmodule FerrymanTest do
     assert {:ok, redis} = Redix.start_link()
     assert {:error, :no_subscriber} = Ferryman.Client.call(redis, "mychannel", "add", [1, 2])
   end
+
+  test "successfully returns multiple function results" do
+    assert {:ok, pid} =
+             Ferryman.Server.start_link(
+               redis_config: [],
+               channels: ["mychannel"],
+               handler: ExampleHandler
+             )
+
+    assert {:ok, pid} =
+             Ferryman.Server.start_link(
+               redis_config: [port: 6379],
+               channels: ["mychannel"],
+               handler: ExampleHandler
+             )
+
+    assert {:ok, redis} = Redix.start_link()
+    assert [{:ok, 3}, {:ok, 3}] = Ferryman.Client.multicall(redis, "mychannel", "add", [1, 2])
+  end
 end

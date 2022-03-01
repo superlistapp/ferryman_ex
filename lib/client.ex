@@ -36,20 +36,27 @@ defmodule Ferryman.Client do
       {:ok, 3}
   """
   def call(redis, channel, method, params, timeout \\ 1) do
-    multicall(redis, channel, method, params, timeout)
+    case multicall(redis, channel, method, params, timeout) do
+      [value | _] -> value
+      _ -> {:error, :no_subscriber}
+    end
   end
 
-  defp multicall(redis, channel, method, params, timeout \\ 1) do
+  @doc """
+  Executes a function on the servers and returns a list of responses.
+
+  ## Example
+
+      iex> Ferryman.Client.multicall(redis, "mychannel", "add", [1, 2])
+      {:ok, 3}
+  """
+  def multicall(redis, channel, method, params, timeout \\ 1) do
     id = random_key()
     req = JSONRPC2.Request.request({method, params, id})
 
     with {:ok, json_req} <- Jason.encode(req),
-         {:ok, server_count} when server_count > 0 <-
-           Redix.command(redis, ["PUBLISH", channel, json_req]) do
-      get_value(redis, id, timeout)
-    else
-      {:ok, 0} -> {:error, :no_subscriber}
-      error -> error
+         {:ok, server_count} <- Redix.command(redis, ["PUBLISH", channel, json_req]) do
+      for n <- :lists.seq(1, server_count), do: get_value(redis, id, timeout)
     end
   end
 

@@ -42,11 +42,11 @@ defmodule Ferryman.Server do
   @spec start_link(redis_config: keyword(), channels: list(String.t()), handler: module()) ::
           :ignore | {:error, any} | {:ok, pid}
   def start_link(opts) when is_list(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    GenServer.start_link(__MODULE__, opts)
   end
 
-  def put_reply(id, message) do
-    GenServer.call(__MODULE__, {:put_reply, id, message})
+  def put_reply(pid, id, message) do
+    GenServer.call(pid, {:put_reply, id, message})
   end
 
   @impl true
@@ -85,7 +85,8 @@ defmodule Ferryman.Server do
         {:redix_pubsub, _pubsub, _ref, :message, %{channel: _channel, payload: message}},
         state
       ) do
-    spawn_link(fn -> handle_request(message, state.handler) end)
+    self = self()
+    spawn_link(fn -> handle_request(self, message, state.handler) end)
     {:noreply, state}
   end
 
@@ -103,14 +104,14 @@ defmodule Ferryman.Server do
   @impl true
   def terminate(_reason, _state), do: :ok
 
-  defp handle_request(message, handler) do
+  defp handle_request(parent, message, handler) do
     case handler.handle(message) do
       :noreply ->
         :noop
 
       {:reply, message} ->
         {:ok, %{"id" => id}} = Jason.decode(message)
-        put_reply(id, message)
+        put_reply(parent, id, message)
     end
   end
 end
