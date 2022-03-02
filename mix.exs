@@ -9,9 +9,14 @@ defmodule Ferryman.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      description: "Pure Elixir JSONRPC2 Client & Server realization for Ruby, Erlang and Elixir",
+      description: "A pure Elixir JSONRPC2 Client & Server realization with Redix",
       name: "FerrymanEx",
-      source_url: "https://github.com/superlistapp/ferryman_ex"
+      source_url: "https://github.com/superlistapp/ferryman_ex",
+      docs: [
+        extras: ["README.md"],
+        api_reference: false,
+        main: "readme"
+      ]
     ]
   end
 
@@ -27,7 +32,8 @@ defmodule Ferryman.MixProject do
     [
       {:jsonrpc2, "~> 2.0"},
       {:jason, "~> 1.0"},
-      {:redix, "~> 1.1"}
+      {:redix, "~> 1.1"},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
     ]
   end
 

@@ -28,6 +28,7 @@ defmodule Ferryman.Server do
   use GenServer
 
   defmodule State do
+    @moduledoc false
     defstruct [:client, :handler, :channels]
   end
 

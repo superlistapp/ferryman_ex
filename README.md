@@ -1,5 +1,9 @@
 # ⚡️ FerrymanEx
 
+[![CI](https://github.com/superlistapp/ferryman_ex/actions/workflows/main.yml/badge.svg)](https://github.com/superlistapp/ferryman_ex/actions/workflows/main.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/ferryman_ex.svg)](https://hex.pm/packages/ferryman_ex)
+[![docs](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/ferryman_ex/)
+
 `FerrymanEx` is a pure Elixir JSONRPC2 Client & Server realization.
 
 [Ferryman](https://github.com/superlistapp/ferryman) is a JSONRPC 2.0 Client & Server realization for Erlang and Ruby.
